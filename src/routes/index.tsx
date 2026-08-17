@@ -67,7 +67,7 @@ function Index() {
           />
           <div className="absolute inset-0 bg-[image:var(--gradient-veil)]" />
           <div
-            className="absolute inset-0 opacity-[0.08] mix-blend-overlay"
+            className="absolute inset-0 opacity-[0.03] mix-blend-soft-light"
             style={{ backgroundImage: `url(${texture})`, backgroundSize: "cover" }}
           />
 
