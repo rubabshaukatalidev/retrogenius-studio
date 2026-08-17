@@ -6,8 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 export function SiteNav() {
   const { user } = useAuth();
-
+  return (
     <header className="fixed inset-x-0 top-0 z-50">
+
       <div className="mx-auto mt-4 flex w-[min(1180px,92vw)] items-center justify-between rounded-full border border-border bg-background/60 px-4 py-2.5 backdrop-blur-xl transition-all duration-500">
         <Link to="/" className="flex items-center gap-2">
           <Feather className="h-5 w-5 text-primary" />
