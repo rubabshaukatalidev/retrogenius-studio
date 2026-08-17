@@ -81,11 +81,15 @@ export type GeneratorState = {
   outlineOnly: boolean;
 };
 
+export type AssignmentSection = { heading: string; paragraphs: string[] };
+
 export type Assignment = {
   title: string;
+  abstract?: string;
   meta: string;
-  sections: { heading: string; body: string }[];
+  sections: AssignmentSection[];
   references: string[];
+  wordCount?: number;
 };
 
 const OPENERS: Record<string, string> = {
