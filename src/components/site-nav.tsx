@@ -29,17 +29,35 @@ export function SiteNav() {
           </a>
         </nav>
         <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm" className="rounded-full">
-            <Link to="/auth" search={{ mode: "login" }}>
-              Log in
-            </Link>
-          </Button>
-          <Button asChild size="sm" className="rounded-full">
-            <Link to="/auth" search={{ mode: "signup" }}>
-              Sign up
-            </Link>
-          </Button>
+          {user ? (
+            <>
+              <Button asChild variant="ghost" size="sm" className="rounded-full">
+                <Link to="/library">My library</Link>
+              </Button>
+              <Button
+                size="sm"
+                className="rounded-full"
+                onClick={() => supabase.auth.signOut()}
+              >
+                Log out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button asChild variant="ghost" size="sm" className="rounded-full">
+                <Link to="/auth" search={{ mode: "login" }}>
+                  Log in
+                </Link>
+              </Button>
+              <Button asChild size="sm" className="rounded-full">
+                <Link to="/auth" search={{ mode: "signup" }}>
+                  Sign up
+                </Link>
+              </Button>
+            </>
+          )}
         </div>
+
       </div>
     </header>
   );
