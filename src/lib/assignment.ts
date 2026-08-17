@@ -101,7 +101,7 @@ export function generateAssignment(s: GeneratorState): Assignment {
   const words = Math.round(s.pages * 275);
   const sectionCount = Math.max(3, Math.min(8, Math.round(s.pages * 1.2) + 2));
 
-  const skeleton = [
+  const skeleton: [string, string][] = [
     ["Introduction", `${OPENERS[s.tone] ?? "This work explores"} ${topic}, framing its relevance and setting out the questions that guide the rest of the ${s.category.toLowerCase()}.`],
     ["Background & Context", `A short history of ${topic}, the key terms involved, and the debates that shaped current thinking.`],
     ["Core Argument", `The central claim about ${topic}, supported by evidence, worked examples and counter-positions.`],
@@ -114,7 +114,7 @@ export function generateAssignment(s: GeneratorState): Assignment {
 
   const sections = skeleton.slice(0, sectionCount).map(([heading, body]) => ({
     heading,
-    body: s.outlineOnly ? body.split(",")[0] + "." : body,
+    body: s.outlineOnly ? `${body.split(",")[0]}.` : body,
   }));
 
   return {
@@ -132,5 +132,5 @@ export function generateAssignment(s: GeneratorState): Assignment {
 }
 
 function toTitleCase(v: string) {
-  return v.replace(/\w\S*/g, (t) => t[0].toUpperCase() + t.slice(1));
+  return v.replace(/\w\S*/g, (t) => t.charAt(0).toUpperCase() + t.slice(1));
 }
