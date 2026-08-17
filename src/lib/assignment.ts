@@ -114,7 +114,7 @@ export function generateAssignment(s: GeneratorState): Assignment {
 
   const sections = skeleton.slice(0, sectionCount).map(([heading, body]) => ({
     heading,
-    body: s.outlineOnly ? `${body.split(",")[0]}.` : body,
+    body: s.outlineOnly ? `${body.split(",")[0] ?? body}.` : body,
   }));
 
   return {
