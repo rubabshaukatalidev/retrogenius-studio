@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
-import { Loader2, Sparkles, Download, RotateCcw } from "lucide-react";
+import { Loader2, Sparkles, Download, RotateCcw, Save, Copy } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,13 +15,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
+import { generateAssignmentFn, saveAssignmentFn } from "@/lib/assignment.functions";
 import {
   CATEGORIES,
   FONT_STYLES,
   LANGUAGES,
   TEMPLATES,
   TONES,
-  generateAssignment,
   type Assignment,
   type GeneratorState,
 } from "@/lib/assignment";
@@ -39,7 +42,11 @@ const initial: GeneratorState = {
 export function Generator() {
   const [state, setState] = useState<GeneratorState>(initial);
   const [busy, setBusy] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<Assignment | null>(null);
+  const { user } = useAuth();
+  const generate = useServerFn(generateAssignmentFn);
+  const save = useServerFn(saveAssignmentFn);
 
   const font = useMemo(
     () => FONT_STYLES.find((f) => f.id === state.fontId) ?? FONT_STYLES[0],
@@ -56,33 +63,62 @@ export function Generator() {
     }
     setBusy(true);
     setResult(null);
-    await new Promise((r) => setTimeout(r, 900));
-    setResult(generateAssignment(state));
-    setBusy(false);
-    toast.success("Draft composed.");
+    try {
+      const assignment = await generate({ data: state });
+      setResult(assignment);
+      toast.success(`Written · ${assignment.wordCount?.toLocaleString() ?? ""} words`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not write the assignment.");
+    } finally {
+      setBusy(false);
+    }
   };
+
+  const plainText = (r: Assignment) =>
+    [
+      r.title,
+      r.meta,
+      "",
+      r.abstract ? `Abstract\n${r.abstract}\n` : "",
+      ...r.sections.map((s) => `${s.heading}\n${s.paragraphs.join("\n\n")}\n`),
+      r.references.length ? "References" : "",
+      ...r.references,
+    ]
+      .filter(Boolean)
+      .join("\n");
 
   const download = () => {
     if (!result) return;
-    const text = [
-      result.title,
-      result.meta,
-      "",
-      ...result.sections.map((s) => `${s.heading}\n${s.body}\n`),
-      result.references.length ? "References" : "",
-      ...result.references,
-    ].join("\n");
-    const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+    const url = URL.createObjectURL(new Blob([plainText(result)], { type: "text/plain" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${result.title.toLowerCase().replace(/\s+/g, "-")}.txt`;
+    a.download = `${result.title.toLowerCase().replace(/[^\w]+/g, "-").slice(0, 60)}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
+  const copy = async () => {
+    if (!result) return;
+    await navigator.clipboard.writeText(plainText(result));
+    toast.success("Copied to clipboard.");
+  };
+
+  const persist = async () => {
+    if (!result) return;
+    setSaving(true);
+    try {
+      await save({ data: { state, assignment: result } });
+      toast.success("Saved to your library.");
+    } catch {
+      toast.error("Could not save. Please log in again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,420px)_1fr]">
-      <div className="surface-card p-6 sm:p-7">
+      <div className="surface-card h-fit p-6 sm:p-7">
         <div className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="topic">Topic</Label>
@@ -126,7 +162,9 @@ export function Generator() {
           <div className="space-y-3">
             <div className="flex items-baseline justify-between">
               <Label>Length</Label>
-              <span className="font-mono text-sm text-primary">{state.pages} pages</span>
+              <span className="font-mono text-sm text-primary">
+                {state.pages} pages · ≈{(state.pages * 300).toLocaleString()} words
+              </span>
             </div>
             <Slider
               min={1}
@@ -150,12 +188,8 @@ export function Generator() {
 
           <div className="flex gap-2 pt-1">
             <Button onClick={run} disabled={busy} className="h-11 flex-1 rounded-full">
-              {busy ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Sparkles className="h-4 w-4" />
-              )}
-              {busy ? "Composing…" : "Generate"}
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              {busy ? "Writing…" : "Write assignment"}
             </Button>
             <Button
               variant="outline"
@@ -168,6 +202,22 @@ export function Generator() {
               <RotateCcw className="h-4 w-4" />
             </Button>
           </div>
+
+          <div className="flex flex-wrap gap-2 pt-1">
+            {TEMPLATES.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => set("template", t.id)}
+                className={`rounded-full border px-3 py-1.5 text-xs transition-all duration-300 ${
+                  state.template === t.id
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                }`}
+              >
+                {t.name}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -177,18 +227,21 @@ export function Generator() {
           <div className="flex h-full min-h-[440px] flex-col items-center justify-center text-center">
             <Sparkles className="h-8 w-8 animate-shimmer text-primary" />
             <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-              Your composed draft will appear here, set in your chosen typeface and template.
+              Your full assignment — real paragraphs, evidence and citations — appears here.
             </p>
           </div>
         )}
 
         {busy && (
           <div className="space-y-4">
-            {Array.from({ length: 6 }).map((_, i) => (
+            <p className="font-mono text-xs uppercase tracking-[0.28em] text-primary">
+              Researching and writing…
+            </p>
+            {Array.from({ length: 10 }).map((_, i) => (
               <div
                 key={i}
                 className="h-4 animate-shimmer rounded bg-muted"
-                style={{ width: `${95 - i * 9}%`, animationDelay: `${i * 0.12}s` }}
+                style={{ width: `${96 - (i % 5) * 8}%`, animationDelay: `${i * 0.1}s` }}
               />
             ))}
           </div>
@@ -201,51 +254,72 @@ export function Generator() {
             </p>
             <h3 className="mt-3 text-3xl leading-tight sm:text-4xl">{result.title}</h3>
             <p className="mt-2 text-sm text-muted-foreground">{result.meta}</p>
-            <div className="mt-7 space-y-6">
+
+            {result.abstract && (
+              <div className="mt-6 rounded-lg border border-border bg-secondary/30 p-4">
+                <h4 className="text-base text-primary">Abstract</h4>
+                <p className="mt-1 text-[15px] leading-relaxed text-foreground/85">
+                  {result.abstract}
+                </p>
+              </div>
+            )}
+
+            <div className="mt-7 space-y-7">
               {result.sections.map((s, i) => (
-                <div
-                  key={s.heading}
-                  className="animate-rise border-l-2 border-border pl-4"
-                  style={{ animationDelay: `${i * 90}ms` }}
+                <section
+                  key={`${s.heading}-${i}`}
+                  className="animate-rise"
+                  style={{ animationDelay: `${Math.min(i, 6) * 80}ms` }}
                 >
-                  <h4 className="text-lg text-primary">{s.heading}</h4>
-                  <p className="mt-1 text-[15px] leading-relaxed text-foreground/85">{s.body}</p>
-                </div>
+                  <h4 className="text-xl text-primary">
+                    {i + 1}. {s.heading}
+                  </h4>
+                  <div className="mt-2 space-y-3">
+                    {s.paragraphs.map((p, j) => (
+                      <p key={j} className="text-[15px] leading-[1.85] text-foreground/85">
+                        {p}
+                      </p>
+                    ))}
+                  </div>
+                </section>
               ))}
             </div>
+
             {result.references.length > 0 && (
               <div className="mt-8 border-t border-border pt-5">
                 <h4 className="text-lg">References</h4>
-                <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-                  {result.references.map((r) => (
-                    <li key={r}>{r}</li>
+                <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
+                  {result.references.map((r, i) => (
+                    <li key={i} className="pl-6 -indent-6 leading-relaxed">
+                      {r}
+                    </li>
                   ))}
                 </ul>
               </div>
             )}
-            <Button onClick={download} variant="outline" className="mt-8 rounded-full">
-              <Download className="h-4 w-4" /> Download draft
-            </Button>
+
+            <div className="mt-8 flex flex-wrap gap-2">
+              <Button onClick={download} variant="outline" className="rounded-full">
+                <Download className="h-4 w-4" /> Download
+              </Button>
+              <Button onClick={copy} variant="outline" className="rounded-full">
+                <Copy className="h-4 w-4" /> Copy
+              </Button>
+              {user ? (
+                <Button onClick={persist} disabled={saving} className="rounded-full">
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  Save to library
+                </Button>
+              ) : (
+                <Button asChild variant="ghost" className="rounded-full">
+                  <Link to="/auth" search={{ mode: "signup" }}>
+                    Log in to save
+                  </Link>
+                </Button>
+              )}
+            </div>
           </article>
         )}
-      </div>
-
-      <div className="lg:col-span-2">
-        <div className="flex flex-wrap gap-2">
-          {TEMPLATES.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => set("template", t.id)}
-              className={`rounded-full border px-4 py-2 text-sm transition-all duration-400 ${
-                state.template === t.id
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-              }`}
-            >
-              {t.name}
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );
@@ -298,7 +372,7 @@ function Toggle({
 }) {
   return (
     <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2.5 transition-colors duration-300 hover:border-primary/40">
-      <span className="text-sm">{label}</span>
+      <Label className="cursor-pointer">{label}</Label>
       <Switch checked={checked} onCheckedChange={onChange} />
     </div>
   );
