@@ -92,7 +92,7 @@ export const TEMPLATE_STYLES: Record<string, TemplateStyle> = {
 };
 
 export const getTemplateStyle = (id: string): TemplateStyle =>
-  TEMPLATE_STYLES[id] ?? TEMPLATE_STYLES.classic!;
+  TEMPLATE_STYLES[id] ?? (TEMPLATE_STYLES["classic"] as TemplateStyle);
 
 export const pdfFontForSelection = (
   templateId: string,
