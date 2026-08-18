@@ -17,6 +17,7 @@ import { useReveal } from "@/hooks/use-reveal";
 import { CATEGORIES, FONT_STYLES, LANGUAGES, TEMPLATES } from "@/lib/assignment";
 import hero from "@/assets/hero.jpg";
 import texture from "@/assets/texture.jpg";
+import heroVideo from "@/assets/hero-student.mp4.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
