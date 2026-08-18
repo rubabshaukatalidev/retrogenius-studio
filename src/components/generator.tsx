@@ -89,12 +89,8 @@ export function Generator() {
 
   const download = () => {
     if (!result) return;
-    const url = URL.createObjectURL(new Blob([plainText(result)], { type: "text/plain" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${result.title.toLowerCase().replace(/[^\w]+/g, "-").slice(0, 60)}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    exportAssignmentPdf(result, state);
+    toast.success("PDF downloaded.");
   };
 
   const copy = async () => {
