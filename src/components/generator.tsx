@@ -17,6 +17,8 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { generateAssignmentFn, saveAssignmentFn } from "@/lib/assignment.functions";
+import { exportAssignmentPdf } from "@/lib/assignment-pdf";
+import { getTemplateStyle } from "@/lib/template-style";
 import {
   CATEGORIES,
   FONT_STYLES,
@@ -52,6 +54,8 @@ export function Generator() {
     () => FONT_STYLES.find((f) => f.id === state.fontId) ?? FONT_STYLES[0],
     [state.fontId],
   );
+  const tpl = useMemo(() => getTemplateStyle(state.template), [state.template]);
+
 
   const set = <K extends keyof GeneratorState>(key: K, value: GeneratorState[K]) =>
     setState((s) => ({ ...s, [key]: value }));
