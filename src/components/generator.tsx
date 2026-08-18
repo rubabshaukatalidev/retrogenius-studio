@@ -17,6 +17,8 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { generateAssignmentFn, saveAssignmentFn } from "@/lib/assignment.functions";
+import { exportAssignmentPdf } from "@/lib/assignment-pdf";
+import { getTemplateStyle } from "@/lib/template-style";
 import {
   CATEGORIES,
   FONT_STYLES,
@@ -52,6 +54,8 @@ export function Generator() {
     () => FONT_STYLES.find((f) => f.id === state.fontId) ?? FONT_STYLES[0],
     [state.fontId],
   );
+  const tpl = useMemo(() => getTemplateStyle(state.template), [state.template]);
+
 
   const set = <K extends keyof GeneratorState>(key: K, value: GeneratorState[K]) =>
     setState((s) => ({ ...s, [key]: value }));
@@ -89,12 +93,8 @@ export function Generator() {
 
   const download = () => {
     if (!result) return;
-    const url = URL.createObjectURL(new Blob([plainText(result)], { type: "text/plain" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${result.title.toLowerCase().replace(/[^\w]+/g, "-").slice(0, 60)}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    exportAssignmentPdf(result, state);
+    toast.success("PDF downloaded.");
   };
 
   const copy = async () => {
@@ -248,35 +248,42 @@ export function Generator() {
         )}
 
         {result && (
-          <article className="animate-rise" style={{ fontFamily: font?.stack }}>
-            <p className="font-mono text-xs uppercase tracking-[0.28em] text-primary">
+          <article className={`animate-rise ${tpl.wrap}`} style={{ fontFamily: font?.stack }}>
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.28em] text-primary">
               {TEMPLATES.find((t) => t.id === state.template)?.name}
             </p>
-            <h3 className="mt-3 text-3xl leading-tight sm:text-4xl">{result.title}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{result.meta}</p>
+            <h3 className={`mt-3 leading-tight ${tpl.title}`}>{result.title}</h3>
+            <p className={`mt-2 ${tpl.meta}`}>{result.meta}</p>
+            {tpl.rule && <div className="mt-4 h-px w-full bg-[image:var(--gradient-brass)]" />}
 
             {result.abstract && (
               <div className="mt-6 rounded-lg border border-border bg-secondary/30 p-4">
-                <h4 className="text-base text-primary">Abstract</h4>
-                <p className="mt-1 text-[15px] leading-relaxed text-foreground/85">
-                  {result.abstract}
-                </p>
+                <h4 className="text-lg font-bold text-primary">Abstract</h4>
+                <p className={`mt-1 ${tpl.body}`}>{result.abstract}</p>
               </div>
             )}
 
-            <div className="mt-7 space-y-7">
+            <div className={`mt-7 space-y-7 ${tpl.columns ? "sm:columns-2 sm:gap-8" : ""}`}>
               {result.sections.map((s, i) => (
                 <section
                   key={`${s.heading}-${i}`}
-                  className="animate-rise"
+                  className={`animate-rise ${tpl.columns ? "break-inside-avoid" : ""}`}
                   style={{ animationDelay: `${Math.min(i, 6) * 80}ms` }}
                 >
-                  <h4 className="text-xl text-primary">
-                    {i + 1}. {s.heading}
+                  <h4 className={tpl.heading}>
+                    {tpl.pdf.numbered ? `${i + 1}. ` : ""}
+                    {s.heading}
                   </h4>
                   <div className="mt-2 space-y-3">
                     {s.paragraphs.map((p, j) => (
-                      <p key={j} className="text-[15px] leading-[1.85] text-foreground/85">
+                      <p
+                        key={j}
+                        className={`${tpl.body} ${
+                          tpl.dropCap && i === 0 && j === 0
+                            ? "first-letter:float-left first-letter:mr-2 first-letter:text-6xl first-letter:font-bold first-letter:leading-[0.8] first-letter:text-primary"
+                            : ""
+                        }`}
+                      >
                         {p}
                       </p>
                     ))}
@@ -287,8 +294,8 @@ export function Generator() {
 
             {result.references.length > 0 && (
               <div className="mt-8 border-t border-border pt-5">
-                <h4 className="text-lg">References</h4>
-                <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
+                <h4 className={tpl.heading}>References</h4>
+                <ul className="mt-2 space-y-2 text-[15px] font-medium text-muted-foreground">
                   {result.references.map((r, i) => (
                     <li key={i} className="pl-6 -indent-6 leading-relaxed">
                       {r}
@@ -298,9 +305,10 @@ export function Generator() {
               </div>
             )}
 
+
             <div className="mt-8 flex flex-wrap gap-2">
               <Button onClick={download} variant="outline" className="rounded-full">
-                <Download className="h-4 w-4" /> Download
+                <Download className="h-4 w-4" /> Download PDF
               </Button>
               <Button onClick={copy} variant="outline" className="rounded-full">
                 <Copy className="h-4 w-4" /> Copy
