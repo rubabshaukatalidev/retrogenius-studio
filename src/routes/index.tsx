@@ -58,47 +58,58 @@ function Index() {
       <main>
         {/* Hero */}
         <section className="relative flex min-h-screen items-center overflow-hidden">
-          <img
-            src={hero}
-            alt="Vintage study desk with manuscripts under a brass lamp"
-            width={1600}
-            height={1008}
-            className="absolute inset-0 h-full w-full animate-kenburns object-cover"
-          />
+          <video
+            className="absolute inset-0 h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            poster={hero}
+            aria-hidden="true"
+          >
+            <source src={heroVideo.url} type="video/mp4" />
+          </video>
           <div className="absolute inset-0 bg-[image:var(--gradient-veil)]" />
+          <div className="absolute inset-0 bg-background/45" />
           <div
-            className="absolute inset-0 opacity-[0.03] mix-blend-soft-light"
+            className="absolute inset-0 opacity-[0.05] mix-blend-soft-light"
             style={{ backgroundImage: `url(${texture})`, backgroundSize: "cover" }}
           />
 
           <div className="relative z-10 mx-auto w-[min(1180px,92vw)] pt-28">
-            <p className="animate-rise font-mono text-xs uppercase tracking-[0.4em] text-primary">
-              Assignment studio · est. 2026
+            <p className="animate-rise font-mono text-sm font-bold uppercase tracking-[0.4em] text-primary">
+              Assignment studio · for university students
             </p>
             <h1
-              className="animate-rise mt-6 max-w-4xl text-5xl leading-[0.95] sm:text-7xl lg:text-8xl"
+              className="animate-rise mt-6 max-w-5xl text-6xl font-bold leading-[0.95] sm:text-8xl lg:text-[7rem]"
               style={{ animationDelay: "120ms" }}
             >
-              Write assignments the way <span className="text-gradient-brass">good print</span> used
-              to feel.
+              Finish your assignment and{" "}
+              <span className="text-gradient-brass">celebrate</span> the submission.
             </h1>
             <p
-              className="animate-rise mt-6 max-w-xl text-lg text-muted-foreground"
+              className="animate-rise mt-7 max-w-2xl text-xl font-medium text-foreground/85 sm:text-2xl"
               style={{ animationDelay: "240ms" }}
             >
-              Choose a category, a language, a typeface and a page range. Scriptorium composes a
-              structured draft in a layout worth handing in.
+              Pick a category, language, typeface and page range — Scriptorium writes real academic
+              prose, formats it in your template, and exports a print-ready PDF.
             </p>
             <div
               className="animate-rise mt-9 flex flex-wrap gap-3"
               style={{ animationDelay: "360ms" }}
             >
-              <Button asChild size="lg" className="h-12 rounded-full px-7">
+              <Button asChild size="lg" className="h-13 rounded-full px-8 text-base font-bold">
                 <a href="#generate">
-                  <Wand2 className="h-4 w-4" /> Start composing
+                  <Wand2 className="h-5 w-5" /> Start composing
                 </a>
               </Button>
-              <Button asChild size="lg" variant="outline" className="h-12 rounded-full px-7">
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="h-13 rounded-full px-8 text-base font-bold"
+              >
                 <Link to="/auth" search={{ mode: "signup" }}>
                   Create an account
                 </Link>
