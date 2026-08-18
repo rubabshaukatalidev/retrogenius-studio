@@ -308,7 +308,7 @@ export function Generator() {
 
             <div className="mt-8 flex flex-wrap gap-2">
               <Button onClick={download} variant="outline" className="rounded-full">
-                <Download className="h-4 w-4" /> Download
+                <Download className="h-4 w-4" /> Download PDF
               </Button>
               <Button onClick={copy} variant="outline" className="rounded-full">
                 <Copy className="h-4 w-4" /> Copy
