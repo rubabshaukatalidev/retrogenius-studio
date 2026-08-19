@@ -18,6 +18,9 @@ import { CATEGORIES, FONT_STYLES, LANGUAGES, TEMPLATES } from "@/lib/assignment"
 import hero from "@/assets/hero.jpg";
 import texture from "@/assets/texture.jpg";
 import heroVideo from "@/assets/hero-student.mp4.asset.json";
+import templatesVideo from "@/assets/templates-loop.mp4.asset.json";
+import ctaVideo from "@/assets/cta-loop.mp4.asset.json";
+import { BackgroundVideo } from "@/components/background-video";
 
 export const Route = createFileRoute("/")({
   head: () => ({
