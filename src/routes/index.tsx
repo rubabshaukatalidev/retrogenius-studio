@@ -62,20 +62,13 @@ function Index() {
       <main>
         {/* Hero */}
         <section className="relative flex min-h-screen items-center overflow-hidden">
-          <video
-            className="absolute inset-0 h-full w-full object-cover"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
+          <BackgroundVideo
+            src={heroVideo.url}
             poster={hero}
-            aria-hidden="true"
-          >
-            <source src={heroVideo.url} type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-[image:var(--gradient-veil)]" />
-          <div className="absolute inset-0 bg-background/45" />
+            overlay={45}
+            kenburns
+            rate={0.75}
+          />
           <div
             className="absolute inset-0 opacity-[0.05] mix-blend-soft-light"
             style={{ backgroundImage: `url(${texture})`, backgroundSize: "cover" }}
@@ -151,6 +144,7 @@ function Index() {
           id="templates"
           className="relative overflow-hidden border-y border-border py-24"
         >
+          <BackgroundVideo src={templatesVideo.url} overlay={82} rate={0.6} />
           <div
             className="absolute inset-0 opacity-[0.06]"
             style={{ backgroundImage: `url(${texture})`, backgroundSize: "cover" }}
@@ -216,15 +210,13 @@ function Index() {
 
         {/* CTA */}
         <section className="relative overflow-hidden py-28">
-          <img
-            src={hero}
-            alt=""
-            loading="lazy"
-            width={1600}
-            height={1008}
-            className="absolute inset-0 h-full w-full animate-kenburns object-cover opacity-40"
+          <BackgroundVideo
+            src={ctaVideo.url}
+            poster={hero}
+            overlay={68}
+            kenburns
+            rate={0.7}
           />
-          <div className="absolute inset-0 bg-background/70" />
           <div className="relative mx-auto w-[min(760px,92vw)] text-center">
             <h2 className="reveal text-4xl sm:text-6xl">Hand in something better</h2>
             <p className="reveal mt-4 text-muted-foreground">
