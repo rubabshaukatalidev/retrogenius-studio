@@ -12,7 +12,7 @@ export function SiteNav() {
       <div className="mx-auto mt-4 flex w-[min(1180px,92vw)] items-center justify-between rounded-full border border-border bg-background/60 px-4 py-2.5 backdrop-blur-xl transition-all duration-500">
         <Link to="/" className="flex items-center gap-2">
           <Feather className="h-5 w-5 text-primary" />
-          <span className="font-display text-lg tracking-tight">Scriptorium</span>
+          <span className="font-display text-lg tracking-tight">Easy Assign</span>
         </Link>
         <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
           <a href="/#generate" className="transition-colors duration-300 hover:text-primary">
