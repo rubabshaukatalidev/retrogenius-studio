@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Loader2, Sparkles, Download, RotateCcw, Save, Copy } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
@@ -41,14 +41,29 @@ const initial: GeneratorState = {
   outlineOnly: false,
 };
 
-export function Generator() {
-  const [state, setState] = useState<GeneratorState>(initial);
+export function Generator({
+  activeTemplate,
+  onTemplateChange,
+}: {
+  activeTemplate?: string | undefined;
+  onTemplateChange?: ((id: string) => void) | undefined;
+}) {
+  const [state, setState] = useState<GeneratorState>({
+    ...initial,
+    template: activeTemplate ?? initial.template,
+  });
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
   const [result, setResult] = useState<Assignment | null>(null);
   const { user } = useAuth();
   const generate = useServerFn(generateAssignmentFn);
   const save = useServerFn(saveAssignmentFn);
+
+  useEffect(() => {
+    if (activeTemplate && activeTemplate !== state.template) {
+      setState((s) => ({ ...s, template: activeTemplate }));
+    }
+  }, [activeTemplate]);
 
   const font = useMemo(
     () => FONT_STYLES.find((f) => f.id === state.fontId) ?? FONT_STYLES[0],
@@ -207,7 +222,10 @@ export function Generator() {
             {TEMPLATES.map((t) => (
               <button
                 key={t.id}
-                onClick={() => set("template", t.id)}
+                onClick={() => {
+                  set("template", t.id);
+                  onTemplateChange?.(t.id);
+                }}
                 className={`rounded-full border px-3 py-1.5 text-xs transition-all duration-300 ${
                   state.template === t.id
                     ? "border-primary bg-primary/10 text-primary"

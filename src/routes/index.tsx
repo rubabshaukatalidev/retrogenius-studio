@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   BookOpen,
   Globe2,
@@ -15,9 +16,8 @@ import { SiteNav } from "@/components/site-nav";
 import { Generator } from "@/components/generator";
 import { useReveal } from "@/hooks/use-reveal";
 import { CATEGORIES, FONT_STYLES, LANGUAGES, TEMPLATES } from "@/lib/assignment";
-import hero from "@/assets/hero.jpg";
 import texture from "@/assets/texture.jpg";
-import heroVideo from "@/assets/hero-student.mp4.asset.json";
+import typingVideo from "@/assets/typing-loop.mp4.asset.json";
 import templatesVideo from "@/assets/templates-loop.mp4.asset.json";
 import ctaVideo from "@/assets/cta-loop.mp4.asset.json";
 import { BackgroundVideo } from "@/components/background-video";
@@ -25,13 +25,13 @@ import { BackgroundVideo } from "@/components/background-video";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Scriptorium · Retro-Modern Assignment Generator" },
+      { title: "Easy Assign · Retro-Modern Assignment Generator" },
       {
         name: "description",
         content:
           "Compose essays, lab reports and case studies with retro-serif templates, multilingual output, typeface presets and page-range control.",
       },
-      { property: "og:title", content: "Scriptorium · Assignment Generator" },
+      { property: "og:title", content: "Easy Assign · Assignment Generator" },
       {
         property: "og:description",
         content:
@@ -55,6 +55,12 @@ const FEATURES = [
 
 function Index() {
   useReveal();
+  const [activeTemplate, setActiveTemplate] = useState<string | undefined>(undefined);
+
+  const pickTemplate = (id: string) => {
+    setActiveTemplate(id);
+    document.getElementById("generate")?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
     <>
@@ -63,8 +69,8 @@ function Index() {
         {/* Hero */}
         <section className="relative flex min-h-screen items-center overflow-hidden">
           <BackgroundVideo
-            src={heroVideo.url}
-            poster={hero}
+            src={typingVideo.url}
+            poster={texture}
             overlay={45}
             kenburns
             rate={0.75}
@@ -79,17 +85,17 @@ function Index() {
               Assignment studio · for university students
             </p>
             <h1
-              className="animate-rise mt-6 max-w-5xl text-6xl font-bold leading-[0.95] sm:text-8xl lg:text-[7rem]"
+              className="animate-rise mt-6 max-w-5xl text-4xl font-bold leading-[1.05] sm:text-5xl lg:text-6xl"
               style={{ animationDelay: "120ms" }}
             >
               Finish your assignment and{" "}
               <span className="text-gradient-brass">celebrate</span> the submission.
             </h1>
             <p
-              className="animate-rise mt-7 max-w-2xl text-xl font-medium text-foreground/85 sm:text-2xl"
+              className="animate-rise mt-7 max-w-2xl text-base font-medium text-foreground/85 sm:text-lg"
               style={{ animationDelay: "240ms" }}
             >
-              Pick a category, language, typeface and page range — Scriptorium writes real academic
+              Pick a category, language, typeface and page range — Easy Assign writes real academic
               prose, formats it in your template, and exports a print-ready PDF.
             </p>
             <div
@@ -129,13 +135,13 @@ function Index() {
         {/* Generator */}
         <section id="generate" className="mx-auto w-[min(1180px,92vw)] py-24">
           <div className="reveal max-w-2xl">
-            <h2 className="text-4xl sm:text-5xl">The composing desk</h2>
+            <h2 className="text-3xl sm:text-4xl">The composing desk</h2>
             <p className="mt-3 text-muted-foreground">
               Every control updates the draft on the right — layout, typeface, language and depth.
             </p>
           </div>
           <div className="reveal mt-10">
-            <Generator />
+            <Generator activeTemplate={activeTemplate} onTemplateChange={setActiveTemplate} />
           </div>
         </section>
 
@@ -150,12 +156,13 @@ function Index() {
             style={{ backgroundImage: `url(${texture})`, backgroundSize: "cover" }}
           />
           <div className="relative mx-auto w-[min(1180px,92vw)]">
-            <h2 className="reveal text-4xl sm:text-5xl">Templates</h2>
+            <h2 className="reveal text-3xl sm:text-4xl">Templates</h2>
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {TEMPLATES.map((t, i) => (
-                <article
+                <button
                   key={t.id}
-                  className="reveal surface-card hover-lift p-6"
+                  onClick={() => pickTemplate(t.id)}
+                  className="reveal surface-card hover-lift p-6 text-left"
                   style={{ transitionDelay: `${i * 70}ms` }}
                 >
                   <p className="font-mono text-xs uppercase tracking-[0.25em] text-primary">
@@ -163,7 +170,7 @@ function Index() {
                   </p>
                   <h3 className="mt-3 text-2xl">{t.name}</h3>
                   <p className="mt-2 text-sm text-muted-foreground">{t.blurb}</p>
-                </article>
+                </button>
               ))}
             </div>
           </div>
@@ -171,7 +178,7 @@ function Index() {
 
         {/* Typefaces */}
         <section id="type" className="mx-auto w-[min(1180px,92vw)] py-24">
-          <h2 className="reveal text-4xl sm:text-5xl">Typefaces</h2>
+          <h2 className="reveal text-3xl sm:text-4xl">Typefaces</h2>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FONT_STYLES.map((f, i) => (
               <div
@@ -191,7 +198,7 @@ function Index() {
         {/* Features */}
         <section id="features" className="border-t border-border py-24">
           <div className="mx-auto w-[min(1180px,92vw)]">
-            <h2 className="reveal text-4xl sm:text-5xl">Everything on the desk</h2>
+            <h2 className="reveal text-3xl sm:text-4xl">Everything on the desk</h2>
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {FEATURES.map((f, i) => (
                 <div
@@ -212,13 +219,13 @@ function Index() {
         <section className="relative overflow-hidden py-28">
           <BackgroundVideo
             src={ctaVideo.url}
-            poster={hero}
+            poster={texture}
             overlay={68}
             kenburns
             rate={0.7}
           />
           <div className="relative mx-auto w-[min(760px,92vw)] text-center">
-            <h2 className="reveal text-4xl sm:text-6xl">Hand in something better</h2>
+            <h2 className="reveal text-3xl sm:text-5xl">Hand in something better</h2>
             <p className="reveal mt-4 text-muted-foreground">
               Free while in preview. Save drafts, templates and presets to your account.
             </p>
@@ -234,7 +241,7 @@ function Index() {
 
         <footer className="border-t border-border py-8">
           <div className="mx-auto flex w-[min(1180px,92vw)] flex-col items-center justify-between gap-3 text-sm text-muted-foreground sm:flex-row">
-            <span className="font-display text-base text-foreground">Scriptorium</span>
+            <span className="font-display text-base text-foreground">Easy Assign</span>
             <span>© 2026 · Composed with care</span>
           </div>
         </footer>
